@@ -6,7 +6,7 @@
   <title>ClassSignal — Dashboard</title>
   <style>
     :root{
-      --bg:#0b1020;
+      --bg:#151c35;
       --text:#eaf0ff;
       --muted:#9aa6c3;
       --border:rgba(255,255,255,.10);
@@ -18,9 +18,9 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      background: radial-gradient(1200px 800px at 10% 10%, rgba(116, 108, 255, .25), transparent 60%),
-                  radial-gradient(900px 600px at 90% 30%, rgba(0, 210, 255, .18), transparent 55%),
-                  radial-gradient(900px 700px at 40% 120%, rgba(255, 98, 225, .14), transparent 55%),
+      background: radial-gradient(1200px 800px at 10% 10%, rgba(116, 108, 255, .35), transparent 60%),
+                  radial-gradient(900px 600px at 90% 30%, rgba(0, 210, 255, .28), transparent 55%),
+                  radial-gradient(900px 700px at 40% 120%, rgba(255, 98, 225, .22), transparent 55%),
                   var(--bg);
       color:var(--text);
       min-height:100vh;
@@ -29,9 +29,9 @@
       padding:26px;
     }
 
-    .wrap{width:min(1200px, 100%); display:grid; gap:16px;}
+    .wrap{width:min(1200px, 100%); display:flex; flex-direction:column; align-items:center; gap:30px;}
 
-    header{display:flex; justify-content:space-between; align-items:flex-start; gap:14px;}
+    header{display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;}
     .title{display:grid; gap:6px;}
     h1{margin:0; font-size: clamp(22px, 3vw, 30px); letter-spacing:.2px;}
     p{margin:0; color:var(--muted); line-height:1.45}
@@ -79,8 +79,17 @@
 
     .grid{
       display:grid;
-      gap:14px;
+      gap:18px;
       grid-template-columns: 1fr;
+      justify-content:center;
+      align-items:stretch;
+      max-width:1000px;
+      margin:40px auto 0 auto;
+    }
+    @media (min-width: 900px){
+      .grid{
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
     @media (min-width: 900px){
       .grid{grid-template-columns: repeat(3, 1fr)}
@@ -94,11 +103,13 @@
       border-radius: var(--r);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       box-shadow: var(--shadow);
-      padding:18px;
+      padding:28px;
       transition: transform .10s ease, border-color .15s ease, background .15s ease;
       position:relative;
       overflow:hidden;
-      min-height: 180px;
+      min-height: 240px;
+      display:grid;
+      gap:14px;
       display:grid;
       gap:10px;
     }
@@ -192,16 +203,6 @@
       </div>
     </header>
 
-    <div class="topbar">
-      <div>
-        <label for="roomCode">Room code (optional)</label><br/>
-        <input id="roomCode" class="mono" maxlength="8" inputmode="text" placeholder="e.g., NTU123" />
-      </div>
-      <div style="color:var(--muted); font-size:12px; line-height:1.45; max-width:520px;">
-        Tip: when you set real URLs, the dashboard will append <span class="mono">?room=NTU123</span> automatically.
-      </div>
-    </div>
-
     <div class="grid" aria-label="Applications">
       <button class="tile" id="tilePulse" type="button">
         <span class="glow g1" aria-hidden="true"></span>
@@ -253,7 +254,7 @@
   const el = (id) => document.getElementById(id);
   const toast = el('toast');
   const statusText = el('statusText');
-  const roomCode = el('roomCode');
+  
 
   const apps = {
     pulse: {
@@ -275,38 +276,21 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
   }
 
-  function normalizeRoom(code){
-    return (code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
-  }
-
+  
   function openApp(key){
-    const room = normalizeRoom(roomCode.value);
-    roomCode.value = room;
-
     const app = apps[key];
-    const hasRealUrl = app.url && app.url !== 'about:blank';
-
-    if(hasRealUrl){
-      const url = new URL(app.url, window.location.href);
-      if(room) url.searchParams.set('room', room);
-      window.location.href = url.toString();
-      return;
+    if(app && app.url){
+      window.location.href = app.url;
+    } else {
+      showToast('Link not set for this app.');
     }
-
-    // No real URL yet: show a helpful message
-    showToast('Link not set yet (edit apps.' + key + '.url)');
-    alert(app.placeholder(room));
   }
 
   el('tilePulse').addEventListener('click', () => openApp('pulse'));
   el('tileSurvey').addEventListener('click', () => openApp('survey'));
   el('tileResponse').addEventListener('click', () => openApp('response'));
 
-  roomCode.addEventListener('input', () => {
-    const v = normalizeRoom(roomCode.value);
-    if(!v){ statusText.textContent = 'Ready'; return; }
-    statusText.textContent = `Room: ${v}`;
-  });
+  
 </script>
 </body>
 </html>
